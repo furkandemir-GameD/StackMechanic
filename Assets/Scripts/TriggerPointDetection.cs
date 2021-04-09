@@ -34,12 +34,10 @@ public class TriggerPointDetection : MonoBehaviour
             if (hit.collider.gameObject.layer == 8)
             {
                 stackManager.CollectedObject(hit.transform.gameObject);
-                Debug.Log("Collision With Collactable Object");
             };
             if (hit.collider.gameObject.layer == 9)
             {
                 stackManager.RemoveObject(hit.transform.gameObject);
-                Debug.Log("Collision With Obstacle");
             }
         }
     }
