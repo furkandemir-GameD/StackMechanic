@@ -28,6 +28,9 @@ public class StackManager : MonoBehaviour
    [SerializeField]
    private Transform stackParentRight;
 
+   [SerializeField]
+   private CameraFollow cameraFollow;
+
    private float stackObjectHeight;
    private int fieldScale;
 
@@ -36,6 +39,7 @@ public class StackManager : MonoBehaviour
    public void CollectedObject(GameObject go)
    {
         go.SetActive(false);
+        cameraFollow.OffsetCalculator(cameraFollow.cameraDistance,cameraFollow.axisDampingZ, cameraFollow.axisRotateY);
 
         body.transform.position = new Vector3(body.transform.position.x, body.transform.position.y + stackObjectHeight , body.transform.position.z);
 
@@ -60,24 +64,27 @@ public class StackManager : MonoBehaviour
    }
    public void RemoveObject(GameObject go)
    {
+        cameraFollow.OffsetCalculator(-cameraFollow.cameraDistance*fieldScale, -cameraFollow.axisDampingZ * fieldScale, -cameraFollow.axisRotateY * fieldScale);
+
         float removeTime =  (go.transform.localScale.z / charachterMovement.speed) / 2;
 
-        Run.After(removeTime, async () =>
+        Run.After(removeTime, () =>
         {
             fieldScale = go.GetComponent<ObstacleProperties>().fieldScaleY;
             for (int i = 0; i < fieldScale; i++)
             {
-                stackParent.GetChild(0).parent = null;
-            }
-           
+                stackParentLeft.GetChild(0).parent = null;
+                stackParentRight.GetChild(0).parent = null;
+            } 
         });
        
         float delayTime = go.transform.localScale.z / charachterMovement.speed;
         Debug.Log(delayTime);
-        Run.After(delayTime, async () =>
+        Run.After(delayTime,  () =>
         {
             body.GetComponent<Rigidbody>().useGravity = true;
-            bodyCollider.size = new Vector3(bodyCollider.size.x, bodyCollider.size.y - stackObjectHeight * fieldScale * 2 , bodyCollider.size.z);
+            bodyCollider.size = new Vector3(bodyCollider.size.x, bodyCollider.size.y - stackObjectHeight * fieldScale , bodyCollider.size.z);
+            bodyCollider.center = new Vector3(bodyCollider.center.x, bodyCollider.center.y + stackObjectHeight , bodyCollider.center.z);
         });
 
         go.layer = collisionBeforeMask.value;
