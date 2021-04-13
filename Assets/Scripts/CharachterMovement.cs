@@ -5,19 +5,37 @@ using UnityEngine;
 public class CharachterMovement : MonoBehaviour
 {
     public float speed;
+
+    [SerializeField]
+    private float rotateSpeed;
     private float deltaX;
+
+    private bool touchFlag;
     private void Update()
     {
-        transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z + speed * Time.deltaTime);
-        if (Input.GetMouseButtonDown(0))
+        if (touchFlag==false)
         {
-            deltaX = Input.mousePosition.x;
+            if (Input.GetMouseButtonDown(0))
+            {
+                GameManager.Instance.CurrentState = GameManager.GameStates.GamePlay;
+                touchFlag = true;
+            }
         }
-        if (Input.GetMouseButton(0))
+        if (GameManager.GameStates.GamePlay == GameManager.Instance.CurrentState)
         {
-            deltaX = Input.mousePosition.x - deltaX;
-            deltaX /= 10;
-            transform.position = new Vector3(transform.position.x + deltaX*Time.deltaTime, transform.position.y, transform.position.z + speed * Time.deltaTime);
+            transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z + speed * Time.deltaTime);
+            if (Input.GetMouseButtonDown(0))
+            {
+                Vector3 mousePos = Input.mousePosition;
+                deltaX = Camera.main.WorldToScreenPoint(mousePos).x;
+            }
+            if (Input.GetMouseButton(0))
+            {
+                Vector3 mousePos = Input.mousePosition;
+                float buffDelta = Camera.main.WorldToScreenPoint(mousePos).x;
+                float delta = deltaX - buffDelta;
+                transform.position = new Vector3(transform.position.x + rotateSpeed * Time.deltaTime * delta, transform.position.y, transform.position.z);
+            }
         }
     }
 }

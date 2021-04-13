@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class StackManager : MonoBehaviour
 {
    public Transform stackableObjectTransform;
@@ -50,13 +50,7 @@ public class StackManager : MonoBehaviour
         body.GetComponent<Rigidbody>().useGravity = false;
 
         GameObject instantiedObject = Instantiate(stackableObject);
-        /*instantiedObject.transform.parent = stackParent;
-
-        instantiedObject.transform.position = new Vector3(stackParent.transform.position.x,
-           + stackParent.GetChild(stackParent.childCount - 1).transform.position.y + stackParent.transform.position.y + stackObjectHeight * stackParent.childCount,
-              stackParent.transform.position.z);
-
-        stackParent.transform.position = new Vector3(stackParent.transform.position.x, stackParent.transform.position.y - stackObjectHeight , stackParent.transform.position.z);*/
+      
         GameObject leftLeg = instantiedObject.transform.GetChild(0).gameObject;
         GameObject rightLeg = instantiedObject.transform.GetChild(1).gameObject;
         LegCalculate(leftLeg, rightLeg);
@@ -64,22 +58,26 @@ public class StackManager : MonoBehaviour
    }
    public void RemoveObject(GameObject go)
    {
+        fieldScale = go.GetComponent<ObstacleProperties>().fieldScaleY;
+        if (fieldScale>= stackParentLeft.childCount)
+        {
+            GameManager.Instance.FailGame();
+        }
         cameraFollow.OffsetCalculator(-cameraFollow.cameraDistance*fieldScale, -cameraFollow.axisDampingZ * fieldScale, -cameraFollow.axisRotateY * fieldScale);
 
         float removeTime =  (go.transform.localScale.z / charachterMovement.speed) / 2;
 
         Run.After(removeTime, () =>
         {
-            fieldScale = go.GetComponent<ObstacleProperties>().fieldScaleY;
             for (int i = 0; i < fieldScale; i++)
             {
-                stackParentLeft.GetChild(0).parent = null;
-                stackParentRight.GetChild(0).parent = null;
+                 stackParentLeft.GetChild(0).parent = null;
+                 stackParentRight.GetChild(0).parent = null;
             } 
         });
-       
         float delayTime = go.transform.localScale.z / charachterMovement.speed;
         Debug.Log(delayTime);
+
         Run.After(delayTime,  () =>
         {
             body.GetComponent<Rigidbody>().useGravity = true;
@@ -94,8 +92,6 @@ public class StackManager : MonoBehaviour
     {  
         rightLeg.transform.parent = stackParentRight;
         leftLeg.transform.parent = stackParentLeft;
-
-
 
         leftLeg.transform.position = new Vector3(stackParentLeft.position.x,
          +stackParentRight.GetChild(stackParentLeft.childCount - 1).position.y + stackParentLeft.position.y + stackObjectHeight *
